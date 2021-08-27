@@ -1,6 +1,7 @@
 //  CITS2002 Project 1 2021
-//  Name(s):             Alexandria 'Texas' Bennett   , Jackie Shan
+//  Name(s):             Alexandria 'Texas' Bennett , Jackie Shan
 //  Student number(s):   22969368 , 22710446
+
 
 //  compile with:  cc -std=c11 -Wall -Werror -o runcool runcool.c
 
@@ -28,23 +29,23 @@ AWORD                       main_memory[N_MAIN_MEMORY_WORDS];
 
 //  see:  http://teaching.csse.uwa.edu.au/units/CITS2002/projects/coolinstructions.php
 enum INSTRUCTION {
-    I_HALT       = 0, // program no longer executes
-    I_NOP,       = 1, // pc advanced to next instruction (no operation)
-    I_ADD,            // 2 ints popped, added and returned
-    I_SUB,            // subtraction(2nd pop from first)
-    I_MULT,           // multiplication
-    I_DIV,            // division(2nd pop from first)
-    I_CALL,           // word following holds address of first instruction (necxt to be executed)
-    I_RETURN,         // retruns to instruction immediately following 'call' function that called current function. int val on TOS returned
-    I_JMP,            // flow follows at adress in the word following this instruction
-    I_JEQ,            // TOS val popped and continues at adress of next word iff = 0
-    I_PRINTI,         // print integer (TOS)
-    I_PRINTS,         // print string
-    I_PUSHC,          // int in word after instruction pushed to stack
-    I_PUSHA,          // word after instruction holds address of int to be pushed to stack
-    I_PUSHR,          // word after instruction provides offset to be added to FP to provide adress as above
-    I_POPA,           // word following holds address to which val on TOS should be popped
-    I_POPR            // word following provides offset to be added to FP then pop as above
+    I_HALT       = 0,
+    I_NOP,       = 1,
+    I_ADD,       = 2,
+    I_SUB,       = 3, 
+    I_MULT,      = 4, 
+    I_DIV,       = 5,
+    I_CALL,      = 6,
+    I_RETURN,    = 7, 
+    I_JMP,       = 8, 
+    I_JEQ,       = 9, 
+    I_PRINTI,    = 10,
+    I_PRINTS,    = 11,
+    I_PUSHC,     = 12,
+    I_PUSHA,     = 13,
+    I_PUSHR,     = 14,
+    I_POPA,      = 15,
+    I_POPR       = 16,
 };
 
 //  USE VALUES OF enum INSTRUCTION TO INDEX THE INSTRUCTION_name[] ARRAY
@@ -114,15 +115,16 @@ int execute_stackmachine(void)
     int PC      = 0;                    // 1st instruction is at address=0
     int SP      = N_MAIN_MEMORY_WORDS;  // initialised to top-of-stack
     int FP      = 0;                    // frame pointer
-
-//  REMOVE THE FOLLOWING LINE ONCE YOU ACTUALLY NEED TO USE FP
-    FP = FP;
-
+    //FP = FP; // use this if u gotta // we gotta 😔
+  
+  
     while(true) {
 
 //  FETCH THE NEXT INSTRUCTION TO BE EXECUTED
-        IWORD instruction   = read_memory(PC);
-        ++PC;
+        IWORD instruction = read_memory(PC);
+        IWORD value1;
+        IWORD value2;
+        PC++;
 
 //      printf("%s\n", INSTRUCTION_name[instruction]);
 
@@ -131,50 +133,123 @@ int execute_stackmachine(void)
         }
 
         switch(instruction) {
-
-//  SUPPORT OTHER INSTRUCTIONS HERE --> all the enum stuff above --> switch  case 'name': break;
+// something about updating PC++ has to be done here, figure it out later, make it work first
         case I_NOP:
-
+            PC++;
+            break;
+            
         case I_ADD:
-                value1 = read_memory(SP);
-                ++SP;
-                value2= read_memory(SP);
-                write_memory(SP, value1 + value2);
-                break;
+            value1 = read_memory(SP);
+            ++SP;
+            value2= read_memory(SP);
+            write_memory(SP, value1 + value2);
+            break;
 
         case I_SUB:
+            value1 = read_memory(SP);
+            ++SP;
+            value2 = read_memory(SP);
+            write_memory(SP, value2 - value1);
+            break;
 
         case I_MULT:
-
+            value1 = read_memory(SP);
+            SP++;
+            value2 = read_memory(SP);
+            write_memory(SP, value2 * value1);
+            break;
+            
         case I_DIV:
-
-        case I_CALL:
-
+            value1 = read_memory(SP);
+            ++SP;
+            value2 = read_memory(SP);
+            write_memory(SP, value2 / value1);
+            break;
+            
+        case I_CALL: //incomplete help
+            //word following has address of the first instruction
+            // A frame pointer of a given invocation of a function is a copy of the stack pointer as it was before the function was invoked.[1]
+                // FIRST ATTEMPT
+                // FP = SP;
+                // PC++;
+                // //thing here
+                // SP = //address of function, //execute function
+                // SP = FP;
+                // SP++;
+            // SECOND ATTEMPT
+            // PC currently points to the call instruction
+            // PC+1 points to the address of the first instruction of the function
+            // PC+2 points to the return address (we return here)
+            write_memory(SP) = FP;
+            FP = SP; //frame pointer for this I_CALL
+            SP++;
+            
+            break;
+            
         case I_RETURN:
-
+            
+            break;
+            
         case I_JMP:
-
+            //PC jumps to whatever the next address is?
+            break;
+            
         case I_JEQ:
-
+            value1 = read_memory(SP);
+            if(value1 == 0){
+             //PC jumps  to adress?
+            }
+            break;
+            
         case I_PRINTI:
-
-        case I_PRINTS:
-
-        case I_PUSHA:
-
+            value1 = read_memory(SP);
+            printf("%i", value1); 
+            break;
+            
+        case I_PRINTS: //girl help
+            value1 = read_memory(SP); //pointer to string
+            value2 = read_memory(value1); // string
+            printf("%s", value2);
+            break;
+            
+        case I_PUSHA: // ¯\_(ツ)_/¯
+            FP = SP;
+            PC++; 
+            value1 = read_memory(PC);
+            write_memory(FP, value1);
+            SP = FP;
+            SP--;
+            break;
+            
         case I_PUSHC: 
-                value1 = read_memory(PC);
-                ++PC;
-                --SP;
-                write_memory(SP, value1);
-                break;
+             value1 = read_memory(PC);
+             PC++;
+             SP--;
+             write_memory(SP, value1);
+             break;
 
         case I_PUSHR:
-
+            FP = PC++;//?
+            value1 = read_memory(FP);
+            write_memory(SP, value1);
+            break;
+            
         case I_POPA:
-
+            // PC = instruction POPA
+            // PC+1 = address of where it should be popped to
+            value1 = read_memory(SP);
+            value2 = read_mmory(PC+1);
+            SP--;
+            write_memory(value2, value1);
+            break;
+            
         case I_POPR:
-
+            value1 = read_memory(SP);
+            value2 = read_memory(PC+1);
+            SP--;
+            write_memory(FP+value2, value1);
+            break;
+            
         }
     }
 
