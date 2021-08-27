@@ -29,7 +29,7 @@ AWORD                       main_memory[N_MAIN_MEMORY_WORDS];
 //  see:  http://teaching.csse.uwa.edu.au/units/CITS2002/projects/coolinstructions.php
 enum INSTRUCTION {
     I_HALT       = 0, // program no longer executes
-    I_NOP,            // pc advanced to next instruction (no operation)
+    I_NOP,       = 1, // pc advanced to next instruction (no operation)
     I_ADD,            // 2 ints popped, added and returned
     I_SUB,            // subtraction(2nd pop from first)
     I_MULT,           // multiplication
@@ -95,11 +95,13 @@ void report_statistics(void)
 
 AWORD read_memory(int address)
 {
+    n_main_memory_reads++;
     return main_memory[address];
 }
 
 void write_memory(AWORD address, AWORD value)
 {
+    n_main_memory_writes++;
     main_memory[address] = value;
 }
 
@@ -128,8 +130,52 @@ int execute_stackmachine(void)
             break;
         }
 
-//  SUPPORT OTHER INSTRUCTIONS HERE --> all the enum stuff above
-//      ....
+        switch(instruction) {
+
+//  SUPPORT OTHER INSTRUCTIONS HERE --> all the enum stuff above --> switch  case 'name': break;
+        case I_NOP:
+
+        case I_ADD:
+                value1 = read_memory(SP);
+                ++SP;
+                value2= read_memory(SP);
+                write_memory(SP, value1 + value2);
+                break;
+
+        case I_SUB:
+
+        case I_MULT:
+
+        case I_DIV:
+
+        case I_CALL:
+
+        case I_RETURN:
+
+        case I_JMP:
+
+        case I_JEQ:
+
+        case I_PRINTI:
+
+        case I_PRINTS:
+
+        case I_PUSHA:
+
+        case I_PUSHC: 
+                value1 = read_memory(PC);
+                ++PC;
+                --SP;
+                write_memory(SP, value1);
+                break;
+
+        case I_PUSHR:
+
+        case I_POPA:
+
+        case I_POPR:
+
+        }
     }
 
 //  THE RESULT OF EXECUTING THE INSTRUCTIONS IS FOUND ON THE TOP-OF-STACK
